@@ -10,12 +10,12 @@ monitored_probes = {}
 
 def fetch(url):
     try:
-        # Simulating a successful response for illustration
-        # response = requests.get(url)
+        response = requests.get(url)
+        response.raise_for_status() 
         return "success"
-    except requests.RequestException as e:
+    except Exception as e:
         print(f'Error fetching {url}: {e}')
-        return None
+        return "failure"
 
 def monitor_probe(probe):
     while True:
@@ -36,13 +36,16 @@ def stop_monitoring_thread(probe_id):
 
 def monitor_existing_probes():
     probes = Probe.objects.all()
+    probe_exists = False
     for probe in probes:
-        print(f"Monitoring probe {probe.url} with duration {probe.duration}")
+        probe_exists = True
+        print(f"Adding probe {probe.url} with duration {probe.duration} for monitoring")
         start_monitoring_thread(probe)
+    if not probe_exists:
+        print("No probes exist in the database")
 
 def start_health_check():
     monitor_existing_probes()
-    # This function can potentially run forever, depending on your application's needs
 
 # Django signals to handle new probe creation and deletion
 @receiver(post_save, sender=Probe)
@@ -53,6 +56,3 @@ def probe_post_save(sender, instance, created, **kwargs):
 @receiver(post_delete, sender=Probe)
 def probe_post_delete(sender, instance, **kwargs):
     stop_monitoring_thread(instance.pk)
-
-# Ensure the health check starts
-start_health_check()

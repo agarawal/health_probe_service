@@ -1,5 +1,3 @@
-# health_probe_service/probe/views.py
-
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -33,7 +31,7 @@ def create_probe(request):
             existing_probe = Probe.objects.filter(url=url).first()
             if existing_probe:
                 return JsonResponse({'error': f'A probe with URL "{url}" already exists.'}, status=400)
-                
+
             probe = Probe.objects.create(url=url, duration=duration)
             return JsonResponse({'url': probe.url, 'duration': probe.duration})
         except json.JSONDecodeError:
